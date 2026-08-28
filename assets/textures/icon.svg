@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b2a4a"/>
+      <stop offset="55%" stop-color="#8c4a2f"/>
+      <stop offset="100%" stop-color="#d97b32"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2c30"/>
+      <stop offset="100%" stop-color="#0e0f11"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="192" height="192" fill="url(#sky)"/>
+
+  <!-- Alborz ridge -->
+  <path d="M0 96 L24 74 L44 90 L68 62 L92 88 L116 70 L140 92 L166 76 L192 96 Z"
+        fill="#2b3550" opacity="0.85"/>
+
+  <!-- Milad Tower -->
+  <g fill="#c8c2b4" opacity="0.95">
+    <path d="M144 96 L147 44 L153 44 L156 96 Z"/>
+    <ellipse cx="150" cy="42" rx="11" ry="7"/>
+    <rect x="149" y="18" width="2" height="18"/>
+    <circle cx="150" cy="17" r="2.4" fill="#ff3b30"/>
+  </g>
+
+  <!-- Road -->
+  <path d="M0 192 L58 96 L134 96 L192 192 Z" fill="url(#road)"/>
+  <path d="M92 96 L86 122 M84 132 L76 162 M74 172 L66 192"
+        stroke="#e6e2d8" stroke-width="5" stroke-linecap="round" opacity="0.75"/>
+
+  <!-- Rider silhouette -->
+  <g fill="#101114">
+    <ellipse cx="96" cy="176" rx="26" ry="6" opacity="0.45"/>
+    <circle cx="86" cy="168" r="13"/>
+    <circle cx="120" cy="160" r="11"/>
+    <path d="M84 166 L104 150 L120 158 L112 168 L94 172 Z"/>
+    <path d="M100 150 L104 132 L112 130 L114 142 Z"/>
+    <circle cx="108" cy="126" r="9"/>
+  </g>
+  <circle cx="108" cy="126" r="9" fill="none" stroke="#e8e4da" stroke-width="2.5"/>
+
+  <!-- Headlight -->
+  <path d="M124 156 L168 138 L172 152 L128 164 Z" fill="#ffd98a" opacity="0.55"/>
+</svg>
