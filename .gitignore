@@ -1,0 +1,84 @@
+# Android artefacts and signing
+*.apk
+*.aab
+*.ap_
+*.dex
+*.keystore
+*.jks
+*.key
+*.pem
+local.properties
+google-services.json
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.iml
+
+# Unity (if an engine project is added later)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+CrashlyticsData/
+InitTestScene*.unity
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+sysinfo.txt
+
+# Godot (if an engine project is added later)
+.import/
+.godot/
+.mono/
+export.cfg
+export_presets.cfg
+*.translation
+
+# Native / generic build
+bin/
+gen/
+out/
+dist/
+*.o
+*.so
+*.dll
+*.dylib
+*.exe
+
+# Secrets and environment
+secrets/
+.env
+.env.*
+!.env.example
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and caches
+*.log
+.cache/
+.pytest_cache/
+__pycache__/

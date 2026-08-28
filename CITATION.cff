@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: If you use this specification, please cite it using these metadata.
+type: software
+title: "HossRide: Android race game"
+version: 1.0.0
+date-released: "2026-08-28"
+license: MIT
+repository-code: "https://github.com/hosseinTabasi/HossRide"
+url: "https://github.com/hosseinTabasi/HossRide"
+authors:
+  - family-names: Tabasi
+    given-names: Hossein
+    website: "https://github.com/hosseinTabasi"
+keywords:
+  - android
+  - game design
+  - specification
+  - tehran
+  - endless rider
+  - filtration
+abstract: >
+  Design specification for HossRide, an original Android title by
+  Hossein Tabasi. The setting is Tehran at permanent night and
+  permanent rain. The destination is Amirabad. The landmark is
+  Milad Tower, placed by locked geometry. The governing thesis is
+  that filtration, not velocity, decides every downstream call.
+  The rider is immobilised. Infinite distance is produced by moving
+  the world. Relative velocity is the only motion quantity. This
+  repository is specification-complete. It does not contain a
+  shipped binary.
