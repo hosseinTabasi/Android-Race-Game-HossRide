@@ -1,120 +1,190 @@
-# HossRide
+# Hossein Rides
 
-Android race game.
+A motorcycle traffic runner set on a Tehran expressway. You ride Hossein's
+bike through real Iranian traffic — Prides, Paykans, Samands, 206s, buses —
+earning credits by the kilometre and spending them in the garage. Milad Tower
+sits on the skyline the whole way. It rains. It gets dark. Sometimes Hossein
+lights a cigarette and smokes it while riding.
 
-**Author:** Hossein Tabasi ([hosseinTabasi](https://github.com/hosseinTabasi)), 2026.
-**Licence:** MIT.
-**Platform:** Android race game.
-**Status:** specification-complete original title.
+Built in **Godot 4** (4.3 or newer), targeting Android.
 
-HossRide is a night ride through Tehran. Rain does not lift. Day does not
-come. The rider is a body on a machine, held still in the world, while the
-city moves. Thirteen street vehicles pass by lofted silhouette. Sodium
-lamps colour the wet asphalt. Milad Tower stands by a locked geometry.
-The destination is Amirabad. Arrival ends the work. There is nothing to
-collect.
+---
 
-## Design question
+## Current state
 
-Can an endless rider be built when filtration, not speed, is the
-governing quantity?
+Everything below is written and wired together. **Nothing has been compiled or
+play-tested yet** — this machine has no Godot install, no Android SDK, and only
+JDK 8, so the first run is on you. Expect to spend a session fixing small
+things; that is normal for a project this size on its first launch.
 
-Velocity exists. The world moves. Traffic approaches. Rain falls. None of
-those speeds decide whether a system may run. Admission into a live set
-decides. Draw, emit, mix, and spawn are downstream of that filter.
-Relative velocity is then the only motion quantity that members of the
-live set are allowed to use. The rider does not travel. The world does.
+| System | State |
+|---|---|
+| Procedural Iranian traffic (13 vehicle types) | built |
+| Motorcycle + rider, 5 bikes | built |
+| Endless chunked expressway | built |
+| Milad Tower, Alborz backdrop, roadside city | built |
+| Day/night cycle + rain + wet roads | built |
+| Credits by distance, multiplier from near misses | built |
+| Garage: buy bikes, paint, 4 upgrade tracks | built |
+| Radio system | built — **you supply the music**, see `assets/music/README.md` |
+| Sound set (engine, horns, crash, rain, UI, voice) | synthesised, in `assets/sfx/` |
+| Android export | configured below, not yet run |
 
-## Repository layout
+---
+
+## Running it
+
+### 1. Install Godot 4
+
+Download the **standard** build (not .NET) from <https://godotengine.org/download/windows/>.
+It's a single `.exe`, about 120 MB, no installer.
+
+### 2. Open the project
+
+Launch Godot → **Import** → select `C:\android_game\hossein_rides\project.godot`
+→ **Import & Edit**.
+
+Press **F5** to run on desktop. Steer with the arrow keys, `Down` to brake,
+`M` to skip a track, `C` to make Hossein light up.
+
+### 3. Regenerate the sound set (optional)
+
+Already generated. To rebuild or tweak:
+
+```bash
+python tools/generate_audio.py
+```
+
+Requires `numpy`. `--only voice` regenerates just the voice bank.
+
+---
+
+## Building the APK
+
+### Prerequisites
+
+1. **JDK 17** — the Android build needs it; the JDK 8 on this machine will not
+   work. Get Temurin 17 from <https://adoptium.net/>.
+2. **Android SDK.** Easiest path is Android Studio
+   (<https://developer.android.com/studio>), which installs the SDK,
+   build-tools and platform-tools together.
+3. **Godot Android export templates** — in Godot:
+   *Editor → Manage Export Templates → Download and Install*.
+
+### Configure Godot
+
+*Editor → Editor Settings → Export → Android*, set:
+
+- **Android SDK Path** — usually `C:\Users\husse\AppData\Local\Android\Sdk`
+- **Java SDK Path** — your JDK 17 folder
+
+Then *Project → Install Android Build Template*.
+
+### Debug keystore
+
+Godot needs a keystore to sign debug builds:
+
+```bash
+keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
+```
+
+Point *Editor Settings → Export → Android → Debug Keystore* at the result.
+
+### Export
+
+*Project → Export → Add → Android*. The preset in `export_presets.cfg` is
+already configured (package name, orientation, permissions, arm64 target).
+Then **Export Project** to get the `.apk`, or plug in a phone with USB
+debugging on and hit the small Android icon in the top-right of the editor to
+deploy and run directly.
+
+---
+
+## How it plays
+
+- **Steering** — tilt the phone, or drag anywhere on screen. Both are live at
+  once. It's lean-based, not lane-snapped: you can put the bike anywhere on
+  the road, which is the whole point of riding a motorcycle through traffic.
+- **Throttle** — automatic. Hold anywhere to brake.
+- **Credits** — earned per kilometre, multiplied by how close you pass cars.
+  A clean, careful run earns; a fast, reckless one earns several times more.
+  Passing within 1.3 m counts as a near miss and pushes the multiplier up to
+  5x. It decays constantly, so you have to keep taking risks to hold it.
+- **Difficulty** — the speed ceiling climbs with distance, up to +14 m/s over
+  the base bike. Traffic doesn't get denser; you get faster, which is harder.
+
+---
+
+## Project layout
 
 ```
-HossRide/
-├── LICENSE                 MIT, Hossein Tabasi, 2026
-├── CITATION.cff            citation metadata
-├── CONTRIBUTING.md         errata only
-├── README.md               this file
-├── .gitignore              Android, Unity, Godot, secrets, packages
-└── docs/
-    ├── index.html          entry page (links to the specification)
-    ├── master-prompt.html  canonical specification (open in a browser)
-    ├── DESIGN.md           palette, type, numbering, treadmill
-    ├── ANDROID.md          generic build, sign, and install notes
-    └── PALETTE.md          specification colour tokens
+project.godot              engine config, input map, autoloads
+scenes/Main.tscn           the only scene — world, HUD, and menus in one tree
+
+scripts/
+  main.gd                  flow: menu -> run -> summary -> garage
+  world.gd                 chunk recycling, camera rig, Milad parallax
+  player.gd                the rider: lean steering, speed, crash
+
+  systems/
+    game.gd                [autoload] credits, distance, save file
+    radio.gd               [autoload] the music station
+    sfx.gd                 [autoload] engine, horns, voice, rain
+    traffic_manager.gd     spawning, driving, near-miss and collision
+    weather.gd             day/night cycle, rain, wetness
+    cigarette.gd           the smoke break
+    bike_catalog.gd        5 motorcycles + paints + upgrade pricing
+    car_catalog.gd         13 Tehran vehicles as lofted section profiles
+
+  build/
+    vehicle_builder.gd     lofts car bodies from profiles
+    bike_builder.gd        builds the motorcycle and rider rig
+    road_builder.gd        one reusable chunk of expressway
+    city_builder.gd        Milad Tower, roadside blocks, Alborz ridge
+    material_library.gd    shared materials + global wetness
+
+  ui/                      hud, menu, summary, garage
+
+assets/
+  music/                   EMPTY — put your tracks here
+  sfx/                     synthesised sound set (20 clips)
+
+tools/generate_audio.py    regenerates the sound set
 ```
 
-This tree does not contain engine source, screenshots, or a shipped
-package. The specification is the instrument that can produce the game
-again.
+---
 
-## How to read the specification
+## Two things to know about the content
 
-Open `docs/master-prompt.html` locally in a browser. A `file://` path is
-enough. The page is self-contained (HTML, CSS, and a rain canvas).
+**The music.** The radio plays whatever you put in `assets/music/`. The game
+ships with nothing. See `assets/music/README.md` for why, and for how to add
+your own tracks.
 
-Google Fonts load Oswald, IBM Plex Sans, and IBM Plex Mono when the
-machine has a network. If the network is absent, the page remains
-readable on system condensed, sans, and mono faces.
+**The cars.** The vehicles are original approximations — hand-written body
+profiles tuned to evoke the Tehran street mix, so a Paykan reads boxy and
+upright and a 206 reads short and round-tailed. They are stylised lookalikes,
+not licensed or dimensionally accurate models. Fine for a personal project; if
+you ever ship this commercially with the real marque names in the UI, get
+advice on trademark first. Renaming them is a one-line change per entry in
+`car_catalog.gd`.
 
-The rain canvas reads CSS theme tokens, follows night and day themes,
-and does not run when `prefers-reduced-motion: reduce` is set. Print
-style hides the canvas.
+---
 
-Read the fourteen sections in order. Numbering is dependency order, not
-decoration. See `docs/DESIGN.md`.
+## Where to go next
 
-## How to rebuild from the fourteen sections
+Roughly in order of what would most improve it:
 
-Do not start at the Android package. Start at the governor.
-
-1. Hold sections 01 and 02. Filtration is prior to every call. No later
-   system is allowed to update by speed and cull afterwards.
-2. Build the treadmill (03). Immobilise the rider. Move the world.
-   Express motion only as relative velocity.
-3. Admit thirteen Tehran street vehicles (04) through that filter. Use
-   lofted profiles. Hold the 42 percent white paint share as a
-   population parameter. Do not invent public names for the thirteen
-   if the author has not published them.
-4. Place the machine, the rider, and the cigarette (05 to 07) as three
-   smoke jobs. Do not collapse ember, exhale, and wind-carried trail
-   into one emitter.
-5. Lock climate (08). Night is permanent. Rain is permanent. Then place
-   lightning on a dedicated light and lock Milad Tower geometry (09).
-6. Synthesise audio (10). Mix so that engine and rain dominate. Keep
-   interface sound quiet. Do not invent frequencies this document does
-   not give.
-7. Refuse collectibles (11). Close on arrival at Amirabad (12), not on
-   a score chase.
-8. Ship on Android (13). Audit against the five standing constraints
-   (14).
-
-Exact engine commands are not given. The specification does not name
-Unity, Godot, or a native stack as a requirement. Any toolchain that
-can honour the five constraints and emit an Android package is in
-scope. See `docs/ANDROID.md`.
-
-## Android notes
-
-The ship target is a modern Android device. This repository does not
-pin an API level, a Gradle identifier, an application id, or an engine
-version. Those values belong to an implementation tree that is not
-present here.
-
-Build, sign, and install as a ordinary Android release. Keep keystores
-out of version control. Confirm on hardware: night, rain, filtration,
-treadmill, three smokes, dedicated lightning, lopsided mix, no
-collectibles, arrival at Amirabad.
-
-HossRide is an original Android title by the author. This documentation
-tree does not claim a store listing.
-
-## Limitations
-
-The specification is the source of truth. Binary and source of a shipped
-package are not in this documentation tree. No performance figures are
-reported. No vehicle names are listed. No screenshots are supplied. Hex
-values in `docs/PALETTE.md` are specification tokens derived from the
-described look. They are not measured from a captured frame.
-
-## Citation
-
-See `CITATION.cff`. Author: Hossein Tabasi, 2026, Tehran, Android.
+1. **Play it and tune the feel.** Steering authority, the speed ramp, and
+   traffic density are the three numbers that decide whether it's fun. They're
+   all exported or near the top of their files.
+2. **Real 3D models.** The procedural geometry is deliberately structured so
+   models can replace it: swap `VehicleBuilder.build()` for a loaded `.glb` per
+   body id and nothing else changes. This is the single biggest visual upgrade
+   available, and it's an asset problem, not a code one.
+3. **Real Persian voice recordings.** Drop them into `assets/sfx/voice/` with
+   the same filenames. The synthesised placeholders have the right rhythm and
+   vowel colour but carry no actual words.
+4. **More road variety** — overpasses, tunnels, the Modarres/Hemmat
+   interchanges, a Milad flyby section.
+5. **Traffic behaviours** — cars cutting you off, doors opening, a motorbike
+   rival to race.
