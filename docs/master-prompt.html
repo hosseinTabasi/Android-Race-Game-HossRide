@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Hossein Tabasi">
+  <meta name="description" content="HossRide design specification. Original Android title by Hossein Tabasi. Tehran, permanent night, permanent rain. Destination: Amirabad.">
+  <title>HossRide: Design Specification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --asphalt: #121214;
+      --asphalt-lift: #1A1A1E;
+      --fog: #2A2A30;
+      --sodium: #E0A040;
+      --sodium-deep: #D4A017;
+      --ember: #C23B22;
+      --paper: #E8E4DC;
+      --paper-dim: #B8B4AC;
+      --bg: var(--asphalt);
+      --fg: var(--paper);
+      --muted: var(--paper-dim);
+      --heading: var(--sodium);
+      --rule: rgba(224, 160, 64, 0.38);
+      --rain-stroke: rgba(224, 160, 64, 0.28);
+      --panel: color-mix(in srgb, var(--asphalt) 82%, transparent);
+      --font-display: "Oswald", "Arial Narrow", "Franklin Gothic Condensed", sans-serif;
+      --font-body: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+      --measure: 42rem;
+    }
+
+    [data-theme="light"] {
+      --bg: #EFECE6;
+      --fg: #161618;
+      --muted: #5C5850;
+      --heading: #8A5A10;
+      --asphalt-lift: #E4E0D8;
+      --fog: #D4D0C8;
+      --rule: rgba(138, 90, 16, 0.35);
+      --rain-stroke: rgba(18, 18, 20, 0.22);
+      --panel: color-mix(in srgb, #EFECE6 88%, transparent);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      #rain { display: none !important; }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.55;
+      font-size: 1.0625rem;
+      letter-spacing: 0.01em;
+    }
+
+    #rain {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .skip {
+      position: absolute;
+      left: -999px;
+      top: 0;
+    }
+    .skip:focus {
+      left: 1rem;
+      top: 1rem;
+      z-index: 5;
+      background: var(--asphalt-lift);
+      color: var(--sodium);
+      padding: 0.5rem 0.75rem;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+    }
+
+    header.hero {
+      padding: 4.5rem 1.5rem 2.5rem;
+      max-width: 72rem;
+      margin: 0 auto;
+    }
+
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--heading);
+      margin: 0 0 1.25rem;
+    }
+
+    header.hero h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(3.4rem, 12vw, 8rem);
+      line-height: 0.9;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--heading);
+      margin: 0 0 0.6rem;
+    }
+
+    .subtitle {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(1.1rem, 2.4vw, 1.6rem);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg);
+      margin: 0 0 1.5rem;
+    }
+
+    .byline {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin: 0 0 1.75rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      align-items: center;
+    }
+
+    button.theme {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--heading);
+      border: 1px solid var(--rule);
+      padding: 0.45rem 0.8rem;
+      cursor: pointer;
+    }
+    button.theme:hover,
+    button.theme:focus {
+      background: var(--asphalt-lift);
+    }
+
+    .hint {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .rule {
+      height: 1px;
+      background: var(--rule);
+      border: 0;
+      margin: 0;
+    }
+
+    nav.toc {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 2.5rem;
+    }
+
+    nav.toc h2 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      color: var(--heading);
+      margin: 0 0 1rem;
+    }
+
+    nav.toc ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      gap: 0.35rem 1.5rem;
+    }
+
+    nav.toc a {
+      color: var(--fg);
+      text-decoration: none;
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.95rem;
+    }
+    nav.toc a:hover,
+    nav.toc a:focus {
+      color: var(--heading);
+    }
+    nav.toc .n {
+      font-family: var(--font-mono);
+      color: var(--heading);
+      min-width: 1.8rem;
+    }
+
+    main {
+      max-width: var(--measure);
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+      background: var(--panel);
+    }
+
+    section.spec {
+      padding: 2.4rem 0 2.6rem;
+      border-top: 1px solid var(--rule);
+    }
+
+    section.spec h2 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.6rem, 4vw, 2.15rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--heading);
+      line-height: 1.15;
+      margin: 0 0 1.1rem;
+    }
+
+    .secno {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      margin-bottom: 0.35rem;
+      color: var(--heading);
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 1rem;
+      color: var(--heading);
+      margin: 1.6rem 0 0.6rem;
+    }
+
+    p, li {
+      margin: 0 0 0.85rem;
+    }
+
+    ul, ol.directives {
+      margin: 0 0 0.9rem;
+      padding-left: 1.2rem;
+    }
+
+    ol.directives li,
+    ul li {
+      margin-bottom: 0.45rem;
+    }
+
+    blockquote.pull {
+      margin: 1.6rem 0 1.7rem;
+      padding: 0.2rem 0 0.2rem 1rem;
+      border-left: 3px solid var(--ember);
+    }
+    blockquote.pull p {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 1.28rem;
+      line-height: 1.35;
+      color: var(--ember);
+      margin: 0;
+    }
+
+    table.tokens {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      margin: 0.8rem 0 1.2rem;
+    }
+    table.tokens th,
+    table.tokens td {
+      text-align: left;
+      padding: 0.4rem 0.5rem 0.4rem 0;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    table.tokens th {
+      color: var(--heading);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .swatch {
+      display: inline-block;
+      width: 0.7rem;
+      height: 0.7rem;
+      margin-right: 0.4rem;
+      vertical-align: middle;
+      border: 1px solid var(--rule);
+    }
+
+    .constraints {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+    }
+    .constraints li {
+      padding: 0.7rem 0;
+      border-top: 1px solid var(--rule);
+      display: grid;
+      grid-template-columns: 2.4rem 1fr;
+      gap: 0.8rem;
+    }
+    .constraints .n {
+      font-family: var(--font-mono);
+      color: var(--heading);
+    }
+
+    footer.colo {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3.5rem;
+      border-top: 1px solid var(--rule);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    footer.colo strong {
+      color: var(--heading);
+      font-weight: 500;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+    }
+
+    a { color: var(--heading); }
+
+    @media print {
+      #rain,
+      .toolbar,
+      button.theme,
+      .hint { display: none !important; }
+      body {
+        background: #fff;
+        color: #111;
+        font-size: 11pt;
+      }
+      header.hero h1,
+      .subtitle,
+      .kicker,
+      nav.toc h2,
+      section.spec h2,
+      h3,
+      nav.toc .n,
+      .secno { color: #8A5A10; }
+      blockquote.pull p { color: #C23B22; }
+      main { background: transparent; max-width: none; }
+      a { color: #111; text-decoration: none; }
+      nav.toc { break-after: page; }
+      section.spec { break-inside: avoid; }
+    }
+
+    @page { margin: 18mm; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#contents">Skip to contents</a>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <header class="hero">
+      <p class="kicker">Design specification · Android · Tehran · 2026</p>
+      <h1>HossRide</h1>
+      <p class="subtitle">Design Specification</p>
+      <p class="byline">Hossein Tabasi · original Android title · specification-complete</p>
+      <div class="toolbar">
+        <button type="button" class="theme" id="themeBtn" aria-pressed="false">Day reading</button>
+        <span class="hint">Rain reads CSS tokens. It stops under reduced motion. Print hides the canvas.</span>
+      </div>
+    </header>
+    <hr class="rule">
+
+    <nav class="toc" id="contents" aria-label="Contents">
+      <h2>Fourteen sections, by dependency</h2>
+      <ol>
+        <li><a href="#s01"><span class="n">01</span> Premise</a></li>
+        <li><a href="#s02"><span class="n">02</span> Technical foundation</a></li>
+        <li><a href="#s03"><span class="n">03</span> The treadmill</a></li>
+        <li><a href="#s04"><span class="n">04</span> Thirteen Tehran vehicles</a></li>
+        <li><a href="#s05"><span class="n">05</span> The machine</a></li>
+        <li><a href="#s06"><span class="n">06</span> The rider</a></li>
+        <li><a href="#s07"><span class="n">07</span> The cigarette</a></li>
+        <li><a href="#s08"><span class="n">08</span> Permanent night and rain</a></li>
+        <li><a href="#s09"><span class="n">09</span> Lightning and Milad Tower</a></li>
+        <li><a href="#s10"><span class="n">10</span> Audio</a></li>
+        <li><a href="#s11"><span class="n">11</span> Economy without collectibles</a></li>
+        <li><a href="#s12"><span class="n">12</span> Arrival at Amirabad</a></li>
+        <li><a href="#s13"><span class="n">13</span> Android pipeline</a></li>
+        <li><a href="#s14"><span class="n">14</span> Five standing constraints</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section class="spec" id="s01" aria-labelledby="h01">
+        <h2 id="h01"><span class="secno">01</span> Premise</h2>
+        <p>HossRide is an original Android title by Hossein Tabasi. The setting is Tehran. Night is permanent. Rain is permanent. The destination is Amirabad. The landmark is Milad Tower, placed by locked geometry, not by decoration.</p>
+        <p>The rider does not collect. The rider does not race a clock for a score. The rider goes to Amirabad.</p>
+        <p>This document is the instrument by which the game may be produced again. Each section is a directive. Implement in the numbered order. Later sections assume earlier ones. Numbering is dependency, not ornament.</p>
+        <p>The work is specification-complete. This page does not contain a shipped binary, an engine project, or a store listing claim. What it contains is binding: climate, motion law, traffic count, paint share, three smoke jobs, lightning as a dedicated light, a lopsided mix, an economy without collectibles, and an arrival that closes the ride.</p>
+      </section>
+
+      <section class="spec" id="s02" aria-labelledby="h02">
+        <h2 id="h02"><span class="secno">02</span> Technical foundation</h2>
+        <blockquote class="pull">
+          <p>Filtration, not velocity, governs every downstream call.</p>
+        </blockquote>
+        <p>Velocity exists. The world moves. Vehicles approach. Rain falls. None of those speeds decide whether a system is allowed to run. Admission decides. A call to draw, to emit, to mix, or to spawn is made only after the subject has passed a filter.</p>
+        <p>The filter is the live set. Objects, lights, voices, and particle jobs enter the live set when they are relevant to the immobilised rider. They leave when they are not. Relative velocity is computed only for members of the live set.</p>
+        <h3>Directive</h3>
+        <p>Do not write a loop that updates every instance by speed and then culls. Write a loop that admits, then updates. Filtration is the governor. Velocity is a quantity inside the admitted set.</p>
+        <h3>Consequences</h3>
+        <ul>
+          <li>Traffic beyond the filter is not integrated.</li>
+          <li>Smoke is not emitted for machines that have not been admitted.</li>
+          <li>Audio voices are not started for sources outside the filter.</li>
+          <li>Lightning is a dedicated light. It is not a global multiply on the whole world. It illuminates what the filter has already named as present.</li>
+        </ul>
+        <p>Every later section inherits this law. If a subsystem updates first and asks for permission after, it is out of specification.</p>
+      </section>
+
+      <section class="spec" id="s03" aria-labelledby="h03">
+        <h2 id="h03"><span class="secno">03</span> The treadmill</h2>
+        <blockquote class="pull">
+          <p>The rider is immobilised. Infinite distance is solved by moving the world.</p>
+        </blockquote>
+        <p>The rider does not translate through a map. The camera that serves the rider is held with the rider. Infinite distance is not produced by a world position that grows without bound. Infinite distance is produced by moving the world past a fixed origin.</p>
+        <p>The only motion quantity that matters is relative velocity: the velocity of world content with respect to the fixed rider. Road, rain, traffic, and the approach to Amirabad are world motions. Input that reads as throttle or lean changes relative velocity. It does not change the rider's world position.</p>
+        <h3>Directive</h3>
+        <ol class="directives">
+          <li>Fix the rider in the scene.</li>
+          <li>Translate the world toward and past the rider.</li>
+          <li>Recycle world segments that have passed, so that the road is endless until Amirabad is declared.</li>
+          <li>Express collision, rain streak, smoke trail, and traffic approach in relative velocity.</li>
+          <li>Do not accumulate a rider world-position that grows without bound.</li>
+        </ol>
+        <p>If the rider is immobilised, filtration has a stable origin. If the rider moves, filtration chases a drifting number. The treadmill is therefore prior to traffic, smoke, climate motion, and arrival.</p>
+      </section>
+
+      <section class="spec" id="s04" aria-labelledby="h04">
+        <h2 id="h04"><span class="secno">04</span> Thirteen Tehran vehicles</h2>
+        <p>The traffic roster is closed. There are thirteen vehicles. They are street vehicles of Tehran. This specification does not name them. Naming is a later art pass by the author. The count is binding. Do not add a fourteenth. Do not collapse the set into a generic car.</p>
+        <p>An implementer may keep an internal roster of thirteen street types. Publication of that roster is not required for the specification to hold. The count, the construction method, and the paint share are required.</p>
+        <h3>Lofted-profile method</h3>
+        <p>Each vehicle is a volume obtained by lofting a characteristic profile, the side silhouette of that street type, into a shallow body. The loft is enough to catch sodium light and rain on longitudinal ridges. It is not a survey-grade mesh. Night, rain, and speed of approach make silhouette and highlight the reading. Interior cabin detail is not required.</p>
+        <h3>Paint distribution</h3>
+        <p>42 percent of the traffic population is white. This is a distribution over instances, not a count of types. White paint is specified because it is common on Tehran streets and because it returns sodium and wet specular. The remaining 58 percent uses other street colours. Do not randomise the white share. Hold 42 percent as a population parameter of the spawner.</p>
+        <p>Admission of vehicles is through the filtration of section 02. A lofted body that has not been admitted is not drawn and does not emit. Motion of an admitted vehicle is relative velocity under section 03. The thirteen are the street. They are not the machine of section 05.</p>
+      </section>
+
+      <section class="spec" id="s05" aria-labelledby="h05">
+        <h2 id="h05"><span class="secno">05</span> The machine</h2>
+        <p>The machine is the motorcycle. It is the only vehicle the rider occupies. It is not one of the thirteen. The thirteen are the street. The machine is the instrument.</p>
+        <p>The machine produces a wind-carried trail: exhaust and spray pulled by relative wind. That trail is the first of three smoke systems. It cannot share a single emitter with the rider's exhale or the cigarette's ember. One system cannot do all three jobs.</p>
+        <h3>Why this system is separate</h3>
+        <ul>
+          <li><strong>Lifetime.</strong> Long. Exhaust and road spray persist in night air and are carried down the relative wind. The trail must still be present when the source has moved a body-length in relative space.</li>
+          <li><strong>Lighting.</strong> Environmental. The trail is not a lamp. It receives sodium, lightning, and wet bounce from the asphalt. It should read as matter in the rain, not as a glow.</li>
+          <li><strong>Particle budget.</strong> The largest of the three. The trail occupies a ribbon of screen behind the machine. Starving it makes the machine look uncoupled from the air.</li>
+        </ul>
+        <p>The job is trail. If this emitter is asked to spark like a coal, or to pulse like a breath, it will lie about the machine.</p>
+      </section>
+
+      <section class="spec" id="s06" aria-labelledby="h06">
+        <h2 id="h06"><span class="secno">06</span> The rider</h2>
+        <p>The rider is a body on the machine. The rider is immobilised in world position (section 03). Animation of the body (breath, head, hands) is local. It does not constitute travel.</p>
+        <p>The rider produces exhale: breath in cold wet air, and the breath that follows a draw on the cigarette. That exhale is the second smoke system.</p>
+        <h3>Why this system is separate</h3>
+        <ul>
+          <li><strong>Lifetime.</strong> Medium and pulsed. A breath is a packet. It blooms and is torn by rain and relative wind. It must not persist as a trail, or the rider will look like a second exhaust pipe. It must not die as a spark, or the night air will look empty.</li>
+          <li><strong>Lighting.</strong> Volumetric reception. Exhale catches sodium from the side. It is not a point light. It should never light the face. The face is lit by street and by the cigarette (section 07).</li>
+          <li><strong>Particle budget.</strong> Modest and intermittent. Emission is gated by a breath or draw cycle, not by a continuous spawn. A continuous spawn would steal budget from the machine trail and would lie about the body.</li>
+        </ul>
+        <p>The job is exhale. It is matter, not heat, and not a wind-carried ribbon.</p>
+      </section>
+
+      <section class="spec" id="s07" aria-labelledby="h07">
+        <h2 id="h07"><span class="secno">07</span> The cigarette</h2>
+        <blockquote class="pull">
+          <p>One system cannot do all three jobs.</p>
+        </blockquote>
+        <p>The cigarette is a small, hot source at the rider's hand or mouth. It is the third smoke system. Its job is ember: a coal, a brief spark, a thin wisp that is not breath and is not exhaust.</p>
+        <h3>Why this system is separate</h3>
+        <ul>
+          <li><strong>Lifetime.</strong> Short for sparks. Persistent only as the coal itself. Sparks die before they become weather. If ember particles live as long as exhaust, the night fills with false fireflies.</li>
+          <li><strong>Lighting.</strong> The ember is a light. It is small, red-orange, and local. It is allowed to light the cup of the hand and, at a draw, the plane of the face. Neither the machine trail nor the exhale is allowed to emit light. One system cannot both be a lamp and be unlit matter.</li>
+          <li><strong>Particle budget.</strong> The smallest of the three. A few sparks, a thin wisp. The coal may be a persistent sprite or a tiny mesh with an emissive. Do not spend the trail's budget here.</li>
+        </ul>
+        <p>The three systems are separate because the jobs are separate: wind-carried trail, exhale, ember. Lifetime, lighting, and budget cannot be shared without falsifying at least one job. Do not invent a common particle interface and force all three through it.</p>
+      </section>
+
+      <section class="spec" id="s08" aria-labelledby="h08">
+        <h2 id="h08"><span class="secno">08</span> Permanent night and rain</h2>
+        <p>The setting is Tehran at night. Night is permanent. Rain is permanent. There is no day cycle. There is no weather state machine that clears. Wet asphalt is the ground condition for the entire ride.</p>
+        <p>Rain is a world motion (section 03). Streaks are relative to the immobilised rider. Rain is also an audio bed (section 10) and a reason the three smokes differ in lifetime. Rain tears exhale faster than it tears a wind-carried trail. Rain does not extinguish the coal. Those differences are climate, not extra lore.</p>
+        <h3>Palette (specification tokens)</h3>
+        <p>Hex values below are tokens derived from the described look. They are not measured from a captured frame. Keep the three roles distinct: asphalt is unlit mass, sodium is illumination, ember is heat.</p>
+        <table class="tokens">
+          <thead>
+            <tr><th>Role</th><th>Token</th><th>Hex</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="swatch" style="background:#121214"></span>Wet asphalt</td><td>--asphalt</td><td>#121214</td></tr>
+            <tr><td><span class="swatch" style="background:#1A1A1E"></span>Asphalt lift</td><td>--asphalt-lift</td><td>#1A1A1E</td></tr>
+            <tr><td><span class="swatch" style="background:#E0A040"></span>Sodium</td><td>--sodium</td><td>#E0A040</td></tr>
+            <tr><td><span class="swatch" style="background:#D4A017"></span>Sodium deep</td><td>--sodium-deep</td><td>#D4A017</td></tr>
+            <tr><td><span class="swatch" style="background:#C23B22"></span>Ember</td><td>--ember</td><td>#C23B22</td></tr>
+            <tr><td><span class="swatch" style="background:#E8E4DC"></span>Paper</td><td>--paper</td><td>#E8E4DC</td></tr>
+          </tbody>
+        </table>
+        <p>Do not implement a sun. Lightning is specified in section 09. Milad Tower is specified in section 09. A light theme on this HTML page is a reading aid. It is not a climate in the game.</p>
+      </section>
+
+      <section class="spec" id="s09" aria-labelledby="h09">
+        <h2 id="h09"><span class="secno">09</span> Lightning and Milad Tower geometry</h2>
+        <h3>Lightning on a dedicated light</h3>
+        <p>A strike is not only a post-process flash and not only a sky colour. Instantiate or enable a light whose sole job is the strike. The light illuminates wet asphalt, lofted vehicle ridges, the machine, the rider, and the tower. Then it goes out. Filtration still governs: the light's contribution is computed for the live set.</p>
+        <p>The dedicated light exists so that specular on wet asphalt and rim on the tower shaft are true to a source, not painted on. A full-screen multiply can accompany the strike. It cannot replace the light.</p>
+        <h3>Milad Tower, placed by geometry</h3>
+        <p>Milad Tower is the landmark. Destination is Amirabad. The tower is a world object. It is not a skybox stamp.</p>
+        <ol class="directives">
+          <li>The tower translates with the world along the road axis as the treadmill runs. It does not recede only as a billboard.</li>
+          <li>The vertical axis stays plumb. The tower does not lean with camera shake.</li>
+          <li>Silhouette budget: three masses. Shaft, observation pod, antenna. No further decorative geometry is required by this specification.</li>
+          <li>Angular offset: the tower is held off the rider's dead-ahead line so that the road remains readable and so that sodium and lightning can rim the shaft. It is not centred on the vanishing point.</li>
+          <li>Approach: as Amirabad nears, the tower enlarges in the frame. It remains the largest vertical in the skyline for the whole ride.</li>
+          <li>The exact metre values are an implementation lock in the engine, not a number invented here. Once chosen, they do not drift.</li>
+        </ol>
+      </section>
+
+      <section class="spec" id="s10" aria-labelledby="h10">
+        <h2 id="h10"><span class="secno">10</span> Audio</h2>
+        <p>Audio is synthesised. The primary bed is not a field recording of a particular street. Synthesis is the method so that engine, rain, and strike remain controllable under the lopsided mix.</p>
+        <p>The mix is deliberately lopsided. This is a design decision, not a defect and not a mastering error.</p>
+        <ul>
+          <li>Engine occupies the foreground of the machine.</li>
+          <li>Rain occupies the world.</li>
+          <li>Together they dominate.</li>
+          <li>Interface sound, if any, is quiet. Menus, notices, and arrival do not compete with engine and rain.</li>
+          <li>The three smokes are visual. They do not require three dedicated loud voices.</li>
+        </ul>
+        <p>This specification does not give oscillator frequencies. No measured Hertz values are supplied. Implement the mix as a level relationship: engine and rain loud, interface quiet, other voices subordinate. Do not invent a centre frequency and treat it as measured.</p>
+        <p>Admission (section 02) applies to voices. Do not start a traffic voice for a vehicle that has not been admitted. Doppler, if used, is a function of relative velocity (section 03), not of a moving rider.</p>
+      </section>
+
+      <section class="spec" id="s11" aria-labelledby="h11">
+        <h2 id="h11"><span class="secno">11</span> Economy without collectibles</h2>
+        <p>There is no collectible economy. No coins, no shards, no pickups on the road, no score items in the rain. The ride does not pay the player for gathering.</p>
+        <p>Progress is spatial and narrative. The world moves. Amirabad nears. The tower grows. That is the economy of attention.</p>
+        <p>Do not add a currency to fund upgrades if that currency is collected from the street. If a garage or machine option exists in a later expansion, it is outside this specification. This specification's ride has no street collectibles.</p>
+        <p>Score may exist as a private diagnostic for the author. It is not the close. The close is section 12.</p>
+      </section>
+
+      <section class="spec" id="s12" aria-labelledby="h12">
+        <h2 id="h12"><span class="secno">12</span> Arrival at Amirabad</h2>
+        <blockquote class="pull">
+          <p>Arrival at Amirabad is the narrative close, not a score chase.</p>
+        </blockquote>
+        <p>The ride ends when Amirabad is reached. Endless road is the method until arrival. Arrival is finite.</p>
+        <h3>Directive</h3>
+        <ol class="directives">
+          <li>Define an admission condition for arrival. Filtration again: the destination is declared when the locked geometry of section 09 has brought the tower and the Amirabad approach into the terminal state.</li>
+          <li>Stop the treadmill's claim of endlessness.</li>
+          <li>Do not convert remaining distance into a high-score screen as the primary close.</li>
+          <li>The close may be quiet. The mix (section 10) still holds: engine and rain, then less engine, then rain, then rest. Interface stays quiet.</li>
+        </ol>
+        <p>Amirabad is a place. It is not a multiplier.</p>
+      </section>
+
+      <section class="spec" id="s13" aria-labelledby="h13">
+        <h2 id="h13"><span class="secno">13</span> Android pipeline</h2>
+        <p>Android is the ship target. The title is built for a modern Android device. This specification does not name a game engine. Any capable toolchain may be used, provided the five constraints of section 14 are held and the delivery is Android.</p>
+        <p>This document does not invent a Gradle identifier, an application id, or an API integer. Those values belong to an implementation tree that is not present here.</p>
+        <h3>Generic pipeline</h3>
+        <ol class="directives">
+          <li>Establish an Android module or export with a current SDK.</li>
+          <li>Set compile and target platform to a modern Android API. This document does not pin a number.</li>
+          <li>Keep signing material out of the repository. Keystores are local secrets.</li>
+          <li>Produce a release artefact (package or bundle) by the toolchain's release path.</li>
+          <li>Install on hardware or an emulator. Confirm night, rain, filtration, treadmill, three smokes, dedicated lightning, lopsided mix, no collectibles, and arrival.</li>
+          <li>Do not treat a desktop session in an editor as the ship.</li>
+        </ol>
+        <p>Physical hardware is preferred for acceptance. Sodium night, rain, and the mix need a real display and a real speaker. Expanded procedure: the Android notes that accompany this specification.</p>
+      </section>
+
+      <section class="spec" id="s14" aria-labelledby="h14">
+        <h2 id="h14"><span class="secno">14</span> Five standing constraints</h2>
+        <p>These five are derived only from the thesis of this document. They are not lore. They do not expire. If a later decision violates one of them, it is out of specification.</p>
+        <ol class="constraints">
+          <li><span class="n">01</span><span>Filtration, not velocity, governs every downstream call.</span></li>
+          <li><span class="n">02</span><span>The rider is immobilised. The world moves. Relative velocity is the only motion quantity.</span></li>
+          <li><span class="n">03</span><span>Night is permanent. Rain is permanent.</span></li>
+          <li><span class="n">04</span><span>There is no collectible economy.</span></li>
+          <li><span class="n">05</span><span>Android is the delivery platform.</span></li>
+        </ol>
+        <p>Rebuild in the order of sections 01 to 14. Audit against these five before a package is called a ship.</p>
+      </section>
+    </main>
+
+    <footer class="colo">
+      <p><strong>HossRide</strong> · Design Specification</p>
+      <p>Hossein Tabasi · 2026 · Tehran · Android</p>
+      <p>MIT Licence · specification-complete original title · fourteen sections, dependency order</p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById("themeBtn");
+      var canvas = document.getElementById("rain");
+      var stored = null;
+      try { stored = localStorage.getItem("hossride-theme"); } catch (e) {}
+      var theme = stored === "light" ? "light" : "dark";
+
+      function applyTheme(next) {
+        theme = next;
+        if (next === "light") {
+          root.setAttribute("data-theme", "light");
+          if (btn) {
+            btn.textContent = "Night reading";
+            btn.setAttribute("aria-pressed", "true");
+          }
+        } else {
+          root.removeAttribute("data-theme");
+          if (btn) {
+            btn.textContent = "Day reading";
+            btn.setAttribute("aria-pressed", "false");
+          }
+        }
+        document.dispatchEvent(new Event("themechange"));
+      }
+
+      applyTheme(theme);
+      if (btn) {
+        btn.addEventListener("click", function () {
+          var next = theme === "light" ? "dark" : "light";
+          applyTheme(next);
+          try { localStorage.setItem("hossride-theme", next); } catch (e) {}
+        });
+      }
+
+      var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      var ctx = canvas ? canvas.getContext("2d") : null;
+      var drops = [];
+      var raf = 0;
+      var color = "rgba(224, 160, 64, 0.28)";
+      var running = false;
+
+      function readToken() {
+        color = getComputedStyle(root).getPropertyValue("--rain-stroke").trim() || color;
+      }
+
+      function stopRain() {
+        running = false;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        if (canvas) canvas.hidden = true;
+        if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function spawn() {
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var n = Math.max(40, Math.floor(w / 11));
+        drops = [];
+        var i;
+        for (i = 0; i < n; i += 1) {
+          drops.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            z: 0.35 + Math.random() * 0.65,
+            len: 10 + Math.random() * 22,
+            vy: 11 + Math.random() * 18
+          });
+        }
+      }
+
+      function resize() {
+        if (!canvas || !ctx) return;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        spawn();
+      }
+
+      function frame() {
+        if (!running || !ctx) return;
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var wind = 0.42;
+        var i, d;
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = color;
+        ctx.lineCap = "round";
+        for (i = 0; i < drops.length; i += 1) {
+          d = drops[i];
+          ctx.globalAlpha = 0.12 + d.z * 0.5;
+          ctx.lineWidth = 0.7 + d.z * 0.7;
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(d.x + wind * d.len, d.y + d.len * d.z);
+          ctx.stroke();
+          d.y += d.vy * d.z * 0.55;
+          d.x += wind * d.vy * 0.08;
+          if (d.y > h + 8) {
+            d.y = -d.len;
+            d.x = Math.random() * w;
+          }
+          if (d.x > w + 20) d.x = 0;
+        }
+        ctx.globalAlpha = 1;
+        raf = requestAnimationFrame(frame);
+      }
+
+      function startRain() {
+        if (!canvas || !ctx || motion.matches) {
+          stopRain();
+          return;
+        }
+        canvas.hidden = false;
+        readToken();
+        resize();
+        if (!running) {
+          running = true;
+          raf = requestAnimationFrame(frame);
+        }
+      }
+
+      function onMotion() {
+        if (motion.matches) stopRain();
+        else startRain();
+      }
+
+      if (motion.addEventListener) motion.addEventListener("change", onMotion);
+      else if (motion.addListener) motion.addListener(onMotion);
+
+      window.addEventListener("resize", function () {
+        if (running) resize();
+      });
+      document.addEventListener("themechange", function () {
+        if (running) readToken();
+      });
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
+        } else if (running) {
+          raf = requestAnimationFrame(frame);
+        }
+      });
+
+      onMotion();
+    })();
+  </script>
+</body>
+</html>
