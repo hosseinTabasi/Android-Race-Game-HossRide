@@ -1,29 +1,1088 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HossRide: Documents</title>
-  <meta name="author" content="Hossein Tabasi">
-  <meta http-equiv="refresh" content="0; url=master-prompt.html">
-  <link rel="canonical" href="master-prompt.html">
-  <style>
-    body {
-      margin: 2.5rem auto;
-      max-width: 36rem;
-      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
-      background: #121214;
-      color: #E8E4DC;
-      line-height: 1.5;
-    }
-    a { color: #E0A040; }
-    .muted { color: #B8B4AC; font-size: 0.9rem; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The complete build specification for HossRide - every system, decision and constraint behind the Tehran motorcycle runner.">
+<style>
+/* Minimal reset - supplied by the Artifact runtime, inlined here so the
+   standalone file renders identically outside it. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img, svg, video, canvas { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+</style>
+<title>HossRide Master Prompt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ============================================================
+   Tokens - light is the base; both dark states redefine only
+   these values, never the components below.
+   ============================================================ */
+:root {
+  --ground:      #F4F2EE;
+  --surface:     #FFFFFF;
+  --surface-2:   #EAE6DF;
+  --ink:         #14171D;
+  --ink-mid:     #3C4450;
+  --ink-muted:   #6A7280;
+  --rule:        #D9D4CC;
+  --rule-strong: #B9B2A7;
+  --accent:      #9E5A11;
+  --accent-hot:  #C97A22;
+  --accent-wash: #F3E6D2;
+  --ember:       #A93A22;
+  --sky:         #2E4468;
+  --shadow:      0 1px 2px rgba(20,23,29,.06), 0 8px 24px rgba(20,23,29,.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0A0D12;
+    --surface:     #12171F;
+    --surface-2:   #1A212C;
+    --ink:         #EAE6DC;
+    --ink-mid:     #B9C0CC;
+    --ink-muted:   #838C9C;
+    --rule:        #232B38;
+    --rule-strong: #354052;
+    --accent:      #E8963C;
+    --accent-hot:  #FFB05E;
+    --accent-wash: #241A0E;
+    --ember:       #D9542F;
+    --sky:         #7FA0D4;
+    --shadow:      0 1px 2px rgba(0,0,0,.5), 0 10px 34px rgba(0,0,0,.42);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0A0D12;
+  --surface:     #12171F;
+  --surface-2:   #1A212C;
+  --ink:         #EAE6DC;
+  --ink-mid:     #B9C0CC;
+  --ink-muted:   #838C9C;
+  --rule:        #232B38;
+  --rule-strong: #354052;
+  --accent:      #E8963C;
+  --accent-hot:  #FFB05E;
+  --accent-wash: #241A0E;
+  --ember:       #D9542F;
+  --sky:         #7FA0D4;
+  --shadow:      0 1px 2px rgba(0,0,0,.5), 0 10px 34px rgba(0,0,0,.42);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 16.5px;
+  line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: Oswald, "Arial Narrow", Impact, sans-serif;
+  font-weight: 600;
+  text-wrap: balance;
+  margin: 0;
+  letter-spacing: .012em;
+}
+
+p { margin: 0; }
+a { color: var(--accent); }
+
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--rule);
+  background:
+    radial-gradient(120% 90% at 50% 0%, var(--accent-wash) 0%, transparent 62%),
+    var(--surface);
+}
+
+#rain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: .5;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 88px 32px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.hero h1 {
+  font-size: clamp(56px, 11vw, 132px);
+  line-height: .88;
+  font-weight: 700;
+  letter-spacing: -.005em;
+  text-transform: uppercase;
+}
+
+.hero h1 .dim { color: var(--ink-muted); }
+
+.hero-lede {
+  max-width: 62ch;
+  font-size: clamp(17px, 2.1vw, 20.5px);
+  line-height: 1.62;
+  color: var(--ink-mid);
+}
+
+.hero-lede em { color: var(--ink); font-style: italic; }
+
+.spec-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-top: 10px;
+  border-top: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.spec-strip div {
+  flex: 1 1 150px;
+  padding: 14px 18px;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.spec-strip dt {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 5px;
+}
+
+.spec-strip dd {
+  margin: 0;
+  font-family: Oswald, sans-serif;
+  font-size: 21px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Shell
+   ============================================================ */
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px 120px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+}
+
+@media (min-width: 1040px) {
+  .shell { grid-template-columns: 214px 1fr; gap: 64px; }
+}
+
+/* --- table of contents --- */
+.toc { display: none; }
+
+@media (min-width: 1040px) {
+  .toc {
+    display: block;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    padding-top: 56px;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+.toc ol {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.toc a {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--ink-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.toc a:hover, .toc a:focus-visible {
+  color: var(--ink);
+  border-bottom-color: var(--rule-strong);
+}
+
+.toc a span {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--accent);
+  padding-top: 2px;
+}
+
+.main { padding-top: 56px; min-width: 0; }
+
+/* ============================================================
+   Sections
+   ============================================================ */
+.sec { padding: 0 0 54px; }
+
+.sec + .sec { border-top: 1px solid var(--rule); padding-top: 46px; }
+
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.sec-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: .1em;
+  padding-top: 6px;
+  flex: none;
+}
+
+.sec h2 {
+  font-size: clamp(27px, 4vw, 38px);
+  line-height: 1.06;
+  text-transform: uppercase;
+  letter-spacing: .004em;
+}
+
+.prose { display: flex; flex-direction: column; gap: 17px; max-width: 68ch; }
+.prose p { color: var(--ink-mid); }
+.prose strong { color: var(--ink); font-weight: 600; }
+.prose em { color: var(--ink); }
+
+.prose code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .875em;
+  background: var(--surface-2);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--ink);
+}
+
+h3 {
+  font-size: 17px;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ink);
+  margin-top: 14px;
+}
+
+/* --- data panel --- */
+.panel {
+  margin-top: 24px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--accent);
+  border-radius: 2px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface-2);
+}
+
+.rows { display: flex; flex-direction: column; }
+
+.row {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 16px;
+  padding: 11px 18px;
+  font-size: 14.5px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.row:last-child { border-bottom: none; }
+
+.row dt {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px;
+  color: var(--accent);
+  line-height: 1.5;
+  padding-top: 2px;
+}
+
+.row dd { margin: 0; color: var(--ink-mid); }
+
+@media (max-width: 620px) {
+  .row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* --- vehicle grid --- */
+.fleet {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.car {
+  background: var(--surface);
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.car b {
+  font-family: Oswald, sans-serif;
+  font-weight: 500;
+  font-size: 16.5px;
+  letter-spacing: .01em;
+}
+
+.car span {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.car .tag {
+  color: var(--accent);
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* --- pull quote --- */
+.pull {
+  margin: 28px 0 4px;
+  padding: 20px 24px;
+  border-left: 2px solid var(--ember);
+  background: var(--surface-2);
+  border-radius: 0 2px 2px 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink);
+  max-width: 62ch;
+}
+
+.pull .who {
+  display: block;
+  margin-top: 9px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* --- code block --- */
+pre {
+  margin: 22px 0 0;
+  padding: 16px 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow-x: auto;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  line-height: 1.62;
+  color: var(--ink-mid);
+}
+
+/* --- footer --- */
+.foot {
+  border-top: 1px solid var(--rule);
+  padding: 34px 32px 60px;
+  max-width: 1180px;
+  margin: 0 auto;
+  color: var(--ink-muted);
+  font-size: 13.5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 30px;
+  justify-content: space-between;
+}
+
+a:focus-visible, .toc a:focus-visible {
+  outline: 2px solid var(--accent-hot);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rain { display: none; }
+}
+</style>
 </head>
 <body>
-  <h1>HossRide</h1>
-  <p>Design specification by Hossein Tabasi, 2026. Tehran. Android.</p>
-  <p><a href="master-prompt.html">Open the canonical specification</a></p>
-  <p class="muted">This page forwards to master-prompt.html.</p>
+<header class="hero">
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <div class="eyebrow">Master Prompt &nbsp;/&nbsp; Complete Build Specification</div>
+    <h1>HossRide<br><span class="dim">Tehran, After Dark</span></h1>
+    <p class="hero-lede">
+      A single-document reconstruction of every system, decision and constraint that
+      constitutes <em>HossRide</em> — an endless motorcycle traversal of a perpetually
+      rain-slicked Tehran expressway, rendered in Godot&nbsp;4 and shipped as a signed
+      Android package. What follows is the specification in full: not a summary of the
+      artefact, but the instrument capable of producing it again.
+    </p>
+    <dl class="spec-strip">
+      <div><dt>Engine</dt><dd>Godot 4.7.2</dd></div>
+      <div><dt>Language</dt><dd>GDScript</dd></div>
+      <div><dt>Source</dt><dd>~5,400 lines</dd></div>
+      <div><dt>Target</dt><dd>Android arm64</dd></div>
+      <div><dt>Package</dt><dd>49.0 MB</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="Contents">
+    <div class="eyebrow">Contents</div>
+    <ol>
+      <li><a href="#premise"><span>01</span> Premise</a></li>
+      <li><a href="#foundation"><span>02</span> Technical Foundation</a></li>
+      <li><a href="#treadmill"><span>03</span> The Treadmill</a></li>
+      <li><a href="#traffic"><span>04</span> Tehran Traffic</a></li>
+      <li><a href="#machine"><span>05</span> The Machine</a></li>
+      <li><a href="#rider"><span>06</span> The Rider</a></li>
+      <li><a href="#cigarette"><span>07</span> The Cigarette</a></li>
+      <li><a href="#atmosphere"><span>08</span> Atmosphere</a></li>
+      <li><a href="#skyline"><span>09</span> The Skyline</a></li>
+      <li><a href="#audio"><span>10</span> Audio Architecture</a></li>
+      <li><a href="#economy"><span>11</span> Economy &amp; Garage</a></li>
+      <li><a href="#homecoming"><span>12</span> The Homecoming</a></li>
+      <li><a href="#pipeline"><span>13</span> Build Pipeline</a></li>
+      <li><a href="#constraints"><span>14</span> Standing Constraints</a></li>
+    </ol>
+  </nav>
+
+  <main class="main">
+
+    <!-- 01 -->
+    <section class="sec" id="premise">
+      <div class="sec-head"><div class="sec-num">01</div><h2>Premise</h2></div>
+      <div class="prose">
+        <p>
+          Construct an endless-runner in the third person, in which the player pilots a
+          large-displacement cruiser motorcycle through dense, adversarial traffic on a
+          multi-lane Tehran expressway. The fantasy under construction is not velocity
+          in the abstract — it is <strong>filtration</strong>: the specific, disreputable
+          pleasure of threading a motorcycle through interstitial gaps that were never
+          intended to admit one.
+        </p>
+        <p>
+          This single premise governs every downstream decision. Lateral position must
+          therefore be <em>continuous</em> rather than lane-quantised; the discretised
+          three-lane hop of the genre's canonical exemplars is expressly rejected, since
+          the gaps worth exploiting are not themselves lane-shaped. Lane geometry remains
+          consequential, but it is the property of the traffic, never of the protagonist.
+        </p>
+        <p>
+          The register is atmospheric rather than arcade. It is always night. It is always
+          raining. A cigarette burns for the entire duration of the ride. The destination
+          is not a score but a specific house, in a specific district, where specific
+          people are waiting.
+        </p>
+        <div class="pull">
+          Weaving proximate to traffic accrues a multiplier that decays continuously.
+          A cautious rider still earns; a reckless one earns several times more. The
+          economy is therefore an argument about how to ride, expressed in arithmetic.
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="sec" id="foundation">
+      <div class="sec-head"><div class="sec-num">02</div><h2>Technical Foundation</h2></div>
+      <div class="prose">
+        <p>
+          Implement in <strong>Godot 4.7</strong> using GDScript throughout, under the
+          <code>mobile</code> rendering method — Forward+ is architecturally superior on
+          desktop but prohibitively expensive on the target hardware, and the mobile
+          backend retains the physically-based shading, real-time shadowing and glow
+          post-processing on which the night presentation wholly depends.
+        </p>
+        <p>
+          Adopt a strict posture of <strong>procedural generation for all geometry</strong>.
+          Not a single mesh is imported. Every vehicle, every structure, the motorcycle,
+          the rider and the landmark tower are constructed at runtime from parameterised
+          descriptions. This is a deliberate concession to the absence of an art pipeline,
+          and it is architected so that authored assets may later displace the procedural
+          equivalents without disturbing the surrounding systems.
+        </p>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Architecture — Autoloaded Singletons</div>
+        <dl class="rows">
+          <div class="row"><dt>Game</dt><dd>Run lifecycle, distance accounting, credit accrual, multiplier decay, garage inventory, versioned JSON persistence.</dd></div>
+          <div class="row"><dt>Radio</dt><dd>Continuous music station spanning menus, runs and failure states without restarting.</dd></div>
+          <div class="row"><dt>Sfx</dt><dd>Engine synthesis layers, pooled one-shots, positional voice bank, weather bed.</dd></div>
+        </dl>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Builder Classes — Static, Cached, Stateless</div>
+        <dl class="rows">
+          <div class="row"><dt>VehicleBuilder</dt><dd>Lofts traffic bodies from cross-sectional profiles; caches one mesh per body type.</dd></div>
+          <div class="row"><dt>BikeBuilder</dt><dd>Assembles the motorcycle and rider as an articulated node hierarchy.</dd></div>
+          <div class="row"><dt>RoadBuilder</dt><dd>Emits one reusable chunk of carriageway, plus boost pad geometry.</dd></div>
+          <div class="row"><dt>CityBuilder</dt><dd>Milad Tower, roadside blocks, the Alborz ridge, the airliner.</dd></div>
+          <div class="row"><dt>FinishLine</dt><dd>The terminal scene at Amirabad, self-animating.</dd></div>
+          <div class="row"><dt>MaterialLibrary</dt><dd>Shared materials with a single global wetness parameter.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="sec" id="treadmill">
+      <div class="sec-head"><div class="sec-num">03</div><h2>The Treadmill</h2></div>
+      <div class="prose">
+        <p>
+          Resolve the infinite-world problem by <strong>immobilising the protagonist</strong>.
+          The rider is pinned permanently at the world origin on the longitudinal axis;
+          the world is translated past him. This confers two decisive advantages: floating-point
+          precision remains pristine across arbitrary distance, and <em>relative velocity</em>
+          becomes the sole quantity of consequence.
+        </p>
+        <p>
+          A traffic vehicle's apparent motion reduces to <code>its speed − the rider's speed</code>.
+          Overtaking, being overtaken, and closing on a labouring bus all emerge from that
+          single expression. Nothing further is required.
+        </p>
+        <p>
+          The carriageway is a recirculating ring of <strong>eight chunks of sixty metres</strong>,
+          four lanes at 3.5&nbsp;m. When a chunk falls behind the camera it is translated to the
+          far end of the ring and its roadside furniture re-randomised. Nothing is instantiated
+          or freed during play; frame time consequently remains flat indefinitely.
+        </p>
+        <h3>Boost Pads</h3>
+        <p>
+          Distribute glowing chevron strips across the tarmac — one candidate per chunk, live on
+          roughly 55% of them, in a randomised lane. Render them <em>unshaded and emissive</em>,
+          so that they read identically at any hour: a reward invisible in darkness is a trap
+          rather than a reward. Traversal confers +15&nbsp;m/s of ceiling plus an immediate
+          impulse, bleeding away across approximately four seconds.
+        </p>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="sec" id="traffic">
+      <div class="sec-head"><div class="sec-num">04</div><h2>Tehran Traffic</h2></div>
+      <div class="prose">
+        <p>
+          This is the system upon which the location's credibility rests entirely. Populate the
+          carriageway with the vehicles that genuinely constitute Iranian road traffic, and
+          describe each not as a box but as <strong>two lofted cross-sectional profiles</strong>:
+          a lower body from sill to beltline, and a greenhouse above it.
+        </p>
+        <p>
+          Each profile is a sequence of rings; each ring is a <em>rounded rectangle</em> rather
+          than a hard rectangle. This last detail is disproportionately load-bearing. Real
+          automotive bodies possess radiused shoulders and crowned roofs, and a boxed silhouette
+          will never resolve into a car irrespective of how accomplished the lighting becomes.
+        </p>
+        <p>
+          The consequence is structural differentiation rather than recolouring: a Paykan emerges
+          boxy and upright with near-vertical glass, inherited from its 1960s Hillman Hunter
+          lineage; a 206 emerges short and round with a steeply truncated hatch; a Samand emerges
+          tall and softened on its 405 platform.
+        </p>
+      </div>
+
+      <div class="fleet">
+        <div class="car"><b>Paykan</b><span class="tag">Dominant</span><span>4.26 m · boxy three-box</span></div>
+        <div class="car"><b>Samand</b><span class="tag">Dominant</span><span>4.50 m · tall, rounded</span></div>
+        <div class="car"><b>Pride 131</b><span>3.80 m · upright, minimal</span></div>
+        <div class="car"><b>Peugeot 206</b><span>3.84 m · hatchback</span></div>
+        <div class="car"><b>Peugeot 405</b><span>4.41 m · wedge nose</span></div>
+        <div class="car"><b>Peugeot Pars</b><span>4.48 m · saloon</span></div>
+        <div class="car"><b>Soren</b><span>4.52 m · facelifted Samand</span></div>
+        <div class="car"><b>Runna</b><span>4.32 m · compact saloon</span></div>
+        <div class="car"><b>Tiba</b><span>4.04 m · upright saloon</span></div>
+        <div class="car"><b>Paykan Vanet</b><span>4.44 m · pickup, open bed</span></div>
+        <div class="car"><b>City Bus</b><span>11.50 m · tandem axle</span></div>
+        <div class="car"><b>Minibus</b><span>6.60 m · high roof</span></div>
+        <div class="car"><b>Light Truck</b><span>6.80 m · cab and body</span></div>
+      </div>
+
+      <div class="prose">
+        <h3>Verisimilitude in the Aggregate</h3>
+        <p>
+          Weight the paint distribution as it genuinely falls: <strong>42% white</strong>, 18%
+          silver, 12% black, with saturated colours comparatively scarce. Admit yellow and green
+          taxi liveries with roof signage on the appropriate bodies. Institute lane discipline —
+          heavy vehicles gravitate to the nearside; quick hatchbacks inhabit the outer lanes.
+        </p>
+        <h3>Behaviour</h3>
+        <p>
+          Vehicles decelerate for whatever precedes them in lane, illuminating brake lamps as they
+          do. They change lanes only where a genuine gap exists, easing toward the new centreline
+          and rolling fractionally into the manoeuvre. They react to the horn: approximately 40%
+          change lane, 30% merely shuffle aside within their own, and the remainder — Tehran being
+          Tehran — disregard it entirely. Buses and trucks never yield to a motorcycle.
+        </p>
+        <p>
+          Pool all instances by body type. Constructing a Samand mesh is expensive; constructing it
+          once and recirculating the instance indefinitely is not.
+        </p>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="sec" id="machine">
+      <div class="sec-head"><div class="sec-num">05</div><h2>The Machine</h2></div>
+      <div class="prose">
+        <p>
+          The player begins on a <strong>large, wide, low-slung V-twin cruiser</strong> — 1.74&nbsp;m
+          wheelbase, 0.40&nbsp;m wheels, a 0.68&nbsp;m seat, tall risers carrying the bars high and
+          drawn back, twin low pipes, deep valanced mudguards over both wheels and forward-set
+          footboards. Its considerable mass renders it ponderous between lanes; that is the levy
+          exacted for how planted and imposing it feels.
+        </p>
+        <p>
+          Assemble it as an articulated hierarchy rather than a monolithic mesh, since its
+          constituents must move independently: the front assembly steers, both wheels rotate,
+          the rider leans against the frame, and his left hand departs the bar entirely.
+        </p>
+        <div class="pull">
+          No component may be matte black. A motorcycle assembled uniformly in black
+          disappears against wet nocturnal asphalt. Every component receives its own value
+          and finish — chromed forks and bars, a gunmetal spine, polished alloy swingarm,
+          tan leather saddle, matching brown grips — so that the machine resolves into
+          discrete parts at a glance.
+          <span class="who">Legibility constraint</span>
+        </div>
+        <h3>Wheels</h3>
+        <p>
+          White rubber, near-white polished alloy, and a sport spoke pattern: five twin-spoke pairs,
+          each mounted on its own pivot so that they constitute true radial arms rather than bars
+          spanning the full diameter — the distinction between a cast alloy and a wire wheel. A dark
+          brake disc on one side prevents the wheel resolving into a flat white circle.
+        </p>
+        <h3>Registration</h3>
+        <p>
+          A white plate bearing <span class="mono">4N5555/IRAN</span>, with a blue province strip,
+          suspended clear of the rear wheel on a visible bracket and canted back ten degrees. The
+          chase camera occupies the space behind the machine, which makes the rear plate the single
+          component permanently addressed to the player.
+        </p>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Handling Model</div>
+        <dl class="rows">
+          <div class="row"><dt>throttle</dt><dd>Automatic. The ceiling ascends with distance travelled, to +20 m/s over the base machine.</dd></div>
+          <div class="row"><dt>steering</dt><dd>Lean-derived. Lateral velocity issues from lean angle, never directly from input — this is what confers mass.</dd></div>
+          <div class="row"><dt>authority</dt><dd>Attenuates with speed. Trivially flickable at 30 km/h; requires commitment at 150.</dd></div>
+          <div class="row"><dt>barrier</dt><dd>Contact scrubs speed and rights the machine rather than terminating the run.</dd></div>
+          <div class="row"><dt>input</dt><dd>Device tilt, touch drag and keyboard, all three live simultaneously.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section class="sec" id="rider">
+      <div class="sec-head"><div class="sec-num">06</div><h2>The Rider</h2></div>
+      <div class="prose">
+        <p>
+          Construct Hossein as a <strong>segmented figure</strong>, articulated at shoulder, elbow
+          and wrist, and at hip, knee and ankle. The bends at elbow and knee are precisely what
+          distinguish a person from a mannequin; a limb rendered as a single capsule will always
+          read as the latter.
+        </p>
+        <p>
+          Build the torso from two stacked sections at differing widths so that it tapers from
+          shoulder to waist as a jacket genuinely hangs. Broaden the chest across and flatten it
+          front-to-back — people are not cylindrical. Append a neck, ears, hair and a short beard.
+        </p>
+        <p>
+          Dress him casually: an olive canvas jacket over a plain tee visible at the open collar,
+          blue jeans, white trainers with dark soles. No helmet. The bare head resolves far more
+          convincingly as a person.
+        </p>
+        <p>
+          On the cruiser he sits <strong>reclined at seventeen degrees</strong> with his hands
+          elevated near shoulder height on the tall risers and his feet thrown forward onto the
+          boards. The riding posture is derived from the machine's declared style, and it does more
+          for a motorcycle's character than any quantity of bodywork.
+        </p>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section class="sec" id="cigarette">
+      <div class="sec-head"><div class="sec-num">07</div><h2>The Cigarette</h2></div>
+      <div class="prose">
+        <p>
+          He smokes for the entire duration of the ride. He ignites one as the run commences and
+          continues until he arrives. The <strong>left hand remains off the bar</strong> holding it
+          throughout — correct for a motorcycle, since the right hand must retain the throttle —
+          and he therefore rides one-handed from beginning to end. This costs the player nothing;
+          steering authority is untouched. The imposition would defeat the purpose.
+        </p>
+        <p>
+          Every 2.6 to 4.4 seconds the arm elevates and the elbow folds to bring it to his mouth,
+          holds for somewhat over half a second, and descends.
+        </p>
+        <h3>Three Distinct Emissions</h3>
+        <p>
+          One particle system cannot discharge all three obligations. Implement them separately:
+          a <strong>continuous thread</strong> trailing from the ember; an <strong>exhalation</strong>,
+          discharged as a single burst from a marker on his face roughly a third of a second
+          <em>after</em> the hand descends, because one holds it in first; and an
+          <strong>ember flare</strong>, escalating from 6× to 15× emission during the inhalation.
+          At road speed the exhaled plume is torn rearward almost immediately, so it launches hard
+          along the negative longitudinal axis at 6–12&nbsp;m/s and expands as it disperses.
+        </p>
+        <p>
+          Scale the cigarette and ember well beyond veracity. A dimensionally accurate cigarette is
+          invisible at this camera distance, and an invisible prop is not a prop.
+        </p>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="sec" id="atmosphere">
+      <div class="sec-head"><div class="sec-num">08</div><h2>Atmosphere</h2></div>
+      <div class="prose">
+        <p>
+          Pin the clock to <strong>22:30 permanently</strong>. Rain perpetually, its intensity
+          drifting between a steady shower and a downpour so that the weather retains movement
+          without ever relenting. Both commence at full strength on the opening frame; the roads
+          are wet and reflective immediately.
+        </p>
+        <p>
+          Drive surface wetness as a <em>single global parameter</em> that every cached material
+          responds to simultaneously. Wet asphalt must both darken and sharpen its reflections —
+          roughness collapsing from 0.88 to 0.14, with metallic ascending — because either
+          transformation alone is unconvincing.
+        </p>
+        <h3>Lightning</h3>
+        <p>
+          Strike every 9 to 26 seconds. Execute the flash on a <strong>dedicated light</strong>
+          rather than the sun: the sun's energy is interpolated toward its target every frame by
+          the day-night system, and any value written to it would be obliterated before becoming
+          perceptible. Each strike is a stuttering double flash — peak, collapse to 18%, recover
+          to 82%, extinguish — because a single fade resolves as a lamp rather than as lightning.
+          Thunder trails by distance: 0.35 seconds for a proximate crack, up to 6.5 for a remote one.
+        </p>
+        <h3>Fog</h3>
+        <p>
+          Keep it deliberately thin. Heavier fog is more attractive at close range, but at permanent
+          night under permanent rain it obliterates Milad Tower at 800 metres — and the landmark
+          holding the skyline matters more than the haze. This is an acknowledged trade.
+        </p>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section class="sec" id="skyline">
+      <div class="sec-head"><div class="sec-num">09</div><h2>The Skyline</h2></div>
+      <div class="prose">
+        <p>
+          Erect <strong>Milad Tower at full scale</strong> — a 250-metre fluted octagonal shaft on a
+          splayed base, the signature bulging observation pod, and a 64-metre antenna spire capped
+          with a red aircraft warning beacon. Illuminate it with vertical light strips ascending the
+          shaft and glowing bands encircling the pod.
+        </p>
+        <p>
+          Position it <strong>dead centre at the terminus of the road, 960 metres distant, and never
+          scroll it.</strong> Straight down the carriageway is the sole bearing guaranteed unobstructed:
+          the roadside blocks wall off everything beyond fifteen metres laterally, so any off-axis
+          placement is occluded regardless of distance. At 960 metres the tip subtends approximately
+          thirty degrees of elevation — within the vertical half-field, with margin as the field
+          widens under speed.
+        </p>
+        <p>
+          Cap roadside buildings at nine storeys, exceptionally fifteen. Most of Tehran along an
+          expressway genuinely is mid-rise, and just as consequentially the roofline must remain
+          beneath the tower's skyline angle or the landmark vanishes behind the nearest apartment block.
+        </p>
+        <p>
+          Pin the snow-capped Alborz ridge to the camera rig as a true horizon. Dispatch an airliner
+          across the sky every 40 to 90 seconds — fuselage, swept wings, nacelles, tail fin, and the
+          light rig that is genuinely all one perceives of an aircraft in a dark sky: steady red to
+          port, green to starboard, a red beacon, and a white anti-collision strobe discharging a
+          double blink every 1.4 seconds.
+        </p>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="sec" id="audio">
+      <div class="sec-head"><div class="sec-num">10</div><h2>Audio Architecture</h2></div>
+      <div class="prose">
+        <p>
+          Implement a <strong>radio</strong>, not a playlist. It persists across menus, runs, crashes
+          and the garage without ever restarting a track merely because the player died. That
+          continuity is the entire proposition: the ride should feel as though it has a soundtrack
+          running beneath it, not a music cue that resets. Shuffle via Fisher-Yates; derive artist
+          and title from the filename; present a now-playing strip; duck beneath collisions.
+        </p>
+        <p>
+          Synthesise the entire non-musical sound set from first principles in Python with NumPy —
+          no samples acquired, none bundled.
+        </p>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Synthesis Methods</div>
+        <dl class="rows">
+          <div class="row"><dt>engine</dt><dd>A combustion pulse train at firing frequency through a resonant exhaust, not stacked sinusoids — that is what yields the uneven thump of a single-cylinder. Two layers, pitch-tracked, with a simulated gearbox so revs climb, snap back and climb again.</dd></div>
+          <div class="row"><dt>horns</dt><dd>Paired detuned reeds with pronounced odd harmonics, four variants at differing intervals, plus a thinner high single reed for the rider's own.</dd></div>
+          <div class="row"><dt>thunder</dt><dd>A broadband crack over a low rumble amplitude-modulated by slow stochastic swells, so that it tumbles rather than fading — that irregularity is the whole character.</dd></div>
+          <div class="row"><dt>voice</dt><dd>Formant synthesis over Persian vowel targets with shouted pitch contours and consonantal onsets. Carries the vowel colour and syllabic rhythm of an exclamation from a car window; carries no words.</dd></div>
+          <div class="row"><dt>crash</dt><dd>Impact burst, sub thud, inharmonic metallic resonances, and gated debris scatter.</dd></div>
+        </dl>
+      </div>
+      <div class="prose">
+        <h3>The Mix</h3>
+        <p>
+          Weight it decisively toward the music. The engine is a perpetual drone and the rain a
+          perpetual hiss; at parity they bury the station entirely. The engine's fundamental sits at
+          0.30, its upper layer at 0.17, the rain bed at 0.26, all beneath a master of 0.48, while
+          the station occupies full level. The imbalance is intentional.
+        </p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="sec" id="economy">
+      <div class="sec-head"><div class="sec-num">11</div><h2>Economy &amp; Garage</h2></div>
+      <div class="prose">
+        <p>
+          Institute <strong>no collectibles whatsoever</strong>. Credits accrue purely by distance, at
+          100 per kilometre, scaled by a multiplier that ascends 0.35 per proximate pass — anything
+          within 1.3 metres — to a ceiling of 5×, and decays continuously at 0.55 per second. Holding
+          it demands sustained exposure.
+        </p>
+        <p>
+          Offer five machines and eight paints, each colour named in both English and Persian. Assign
+          factory colours <em>explicitly</em> per machine rather than deriving them from a hash: a hash
+          will eventually select black, and a black tank on a black road at night is precisely the
+          failure being designed against.
+        </p>
+        <p>
+          Four upgrade tracks — engine, brakes, handling, nitro — across five levels, priced on a 1.7×
+          geometric progression scaled to the machine's value. Present the garage as a live
+          turntable rendering of the actual machine, lit as the world is lit, so that what is
+          purchased is what is ridden.
+        </p>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section class="sec" id="homecoming">
+      <div class="sec-head"><div class="sec-num">12</div><h2>The Homecoming</h2></div>
+      <div class="prose">
+        <p>
+          The run terminates not in failure but in <strong>arrival</strong>. At eleven kilometres —
+          approximately five minutes of riding — he reaches Amirabad.
+        </p>
+        <p>
+          Construct the whole scene six hundred metres out so that it resolves from the haze rather
+          than materialising; suspend traffic generation at that instant so the final stretch clears
+          itself naturally. A green municipal banner spans the carriageway bearing
+          <span class="mono">AMIRABAD</span>. Beyond it stands a two-storey beige-brick Tehran house
+          — flat roof and parapet, lit windows, balcony with railing, rooftop water tank, garden wall,
+          and its name illuminated across the roof.
+        </p>
+        <p>
+          A man, a woman and a child stand <strong>in the middle of the road</strong>, bouncing and
+          waving on a loop from the moment they come into view — already celebrating as he appears,
+          rather than triggering awkwardly upon arrival. Light them from directly overhead and again
+          from in front, so faces and raised arms catch light rather than being lit solely from above.
+        </p>
+        <p>
+          At ninety-five metres he rolls off the throttle and collisions are disarmed — one cannot
+          crash on one's own doorstep. He coasts to a halt just short of them. They cheer for 3.4
+          seconds. Then the summary reads <strong>YOU MADE IT HOME</strong> rather than RUN OVER.
+        </p>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section class="sec" id="pipeline">
+      <div class="sec-head"><div class="sec-num">13</div><h2>Build Pipeline</h2></div>
+      <div class="prose">
+        <p>
+          Produce a signed Android package targeting arm64-v8a. Establish the entire toolchain
+          <strong>portably</strong> — JDK 17, Android SDK command-line tools, build-tools 34, platform
+          34 and a debug keystore, all resident within the project tree, requiring no administrative
+          rights and touching neither the system path nor the registry.
+        </p>
+        <p>
+          Enable ETC2/ASTC texture compression, without which Android export is refused outright.
+          Generate the launcher icon set in three distinct forms, since Android's are not interchangeable:
+          a legacy square icon, a full-bleed adaptive background blurred and darkened, and an adaptive
+          foreground confined to the central 66% safe zone — because the launcher masks and parallaxes
+          the layers independently, and a full-bleed foreground has its subject decapitated on most
+          launchers.
+        </p>
+        <pre>godot --headless --path &lt;project&gt; --import
+godot --headless --path &lt;project&gt; --export-debug "Android" HossRide.apk</pre>
+        <div class="pull">
+          Anticipate one non-obvious obstruction: antivirus software performing HTTPS inspection
+          re-signs every TLS connection with its own root certificate. Windows trusts it; the JVM
+          maintains an entirely separate truststore that does not. The SDK manager consequently
+          fails with <span class="mono">PKIX path building failed</span> and presents exactly as a
+          blocked connection. Directing Java at the Windows certificate store resolves it.
+          <span class="who">Encountered and resolved</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section class="sec" id="constraints">
+      <div class="sec-head"><div class="sec-num">14</div><h2>Standing Constraints</h2></div>
+      <div class="prose">
+        <p>
+          These govern the whole and are not negotiable against convenience.
+        </p>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Non-Negotiable</div>
+        <dl class="rows">
+          <div class="row"><dt>music</dt><dd>Ship none. Build the station; the operator supplies recordings they hold rights to. Commercial music is neither acquired nor bundled.</dd></div>
+          <div class="row"><dt>vehicles</dt><dd>Original approximations evoking the Tehran street mix — stylised likenesses, neither licensed nor dimensionally exact.</dd></div>
+          <div class="row"><dt>legibility</dt><dd>Under permanent night, anything that must be seen must be lit, emissive, or oversized. Accuracy loses to visibility every time.</dd></div>
+          <div class="row"><dt>fairness</dt><dd>No characterful flourish may cost the player anything. The cigarette, the horn and the arrival are free.</dd></div>
+          <div class="row"><dt>performance</dt><dd>Nothing instantiated or freed mid-run. Pool everything. Share every material.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div>HossRide &nbsp;·&nbsp; Master build specification</div>
+  <div class="mono">Godot 4.7.2 &nbsp;·&nbsp; GDScript &nbsp;·&nbsp; Android arm64-v8a</div>
+</footer>
+
+<script>
+(function () {
+  var c = document.getElementById('rain');
+  if (!c || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var ctx = c.getContext('2d');
+  var drops = [], w = 0, h = 0, raf = null;
+
+  function resize() {
+    var r = c.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = r.width; h = r.height;
+    c.width = Math.max(1, w * dpr);
+    c.height = Math.max(1, h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var count = Math.round(Math.min(150, w / 8));
+    drops = [];
+    for (var i = 0; i < count; i++) {
+      drops.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        len: 9 + Math.random() * 20,
+        v: 320 + Math.random() * 420,
+        a: 0.10 + Math.random() * 0.22
+      });
+    }
+  }
+
+  function stroke() {
+    // Read the ink colour so the rain sits correctly in either theme.
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue('--ink-muted').trim() || '#888';
+  }
+
+  var col = '#888', last = 0;
+  function frame(t) {
+    var dt = last ? Math.min((t - last) / 1000, 0.05) : 0.016;
+    last = t;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1;
+    for (var i = 0; i < drops.length; i++) {
+      var d = drops[i];
+      d.y += d.v * dt;
+      d.x -= d.v * 0.13 * dt;
+      if (d.y > h) { d.y = -d.len; d.x = Math.random() * w; }
+      if (d.x < -20) d.x = w + 20;
+      ctx.globalAlpha = d.a;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + d.len * 0.13, d.y - d.len);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    raf = requestAnimationFrame(frame);
+  }
+
+  resize();
+  col = stroke();
+  window.addEventListener('resize', function () { resize(); col = stroke(); });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', function () { col = stroke(); });
+  }
+  raf = requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
